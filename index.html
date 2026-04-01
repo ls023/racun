@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Izracunaj racun</title>
+    <style>
+      h2,
+      h3,
+      h4 {
+        margin: 0;
+      }
+
+      .container {
+        width: 80%;
+        margin: 0 auto;
+      }
+
+      .input-container,
+      .racun-wrapper {
+        border: 1px solid black;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .input-wrapper {
+        display: grid;
+        grid-template-columns: 0.3fr 1fr;
+      }
+
+      button {
+        display: inline-block;
+        padding: 0.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      table {
+        border: 2px solid black;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 0.3rem;
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="input-container">
+        <h2>Unesi trenutno stanje</h2>
+        <div class="input-wrapper">
+          <label for="visa-trenutno">Viša tarifa</label>
+          <input type="text" id="visa-trenutno" />
+        </div>
+        <div class="input-wrapper">
+          <label for="niza-trenutno">Niža tarifa</label>
+          <input type="text" id="niza-trenutno" />
+        </div>
+        <h2>Unesi prethodno stanje</h2>
+        <div class="input-wrapper">
+          <label for="visa-prethodno">Viša tarifa</label>
+          <input type="text" id="visa-prethodno" />
+        </div>
+        <div class="input-wrapper">
+          <label for="niza-trenutno">Niža tarifa</label>
+          <input type="text" id="niza-prethodno" />
+        </div>
+        <button id="submit-btn">Izračunaj</button>
+      </div>
+      <div class="racun-wrapper">
+        <h2 id="racun" style="border: 2px solid black; padding: 0.5rem">
+          Račun:
+        </h2>
+        <h4 id="ukupno">Ukupno potrošeno:</h4>
+        <h4 id="visa">Viša tarifa:</h4>
+        <h4 id="niza">Niža tarifa:</h4>
+        <div class="potrosnja-wrapper">
+          <table>
+            <tr>
+              <th>Zona</th>
+              <th>Tarifa</th>
+              <th>Potrošeno</th>
+              <th>Cena po kWh</th>
+              <th>Ukupno</th>
+            </tr>
+            <tr style="background-color: #00800080">
+              <td rowspan="2">Zelena</td>
+              <td>Viša</td>
+              <td id="visa-zelena">0</td>
+              <td>9.6136</td>
+              <td id="visa-zelena-cena">0</td>
+            </tr>
+            <tr style="background-color: #00800080">
+              <td>Niža</td>
+              <td id="niza-zelena">0</td>
+              <td>2.4034</td>
+              <td id="niza-zelena-cena">0</td>
+            </tr>
+            <tr style="background-color: #0000ff80">
+              <td rowspan="2">Plava</td>
+              <td>Viša</td>
+              <td id="visa-plava">0</td>
+              <td>14.4203</td>
+              <td id="visa-plava-cena">0</td>
+            </tr>
+            <tr style="background-color: #0000ff80">
+              <td>Niža</td>
+              <td id="niza-plava">0</td>
+              <td>3.6051</td>
+              <td id="niza-plava-cena">0</td>
+            </tr>
+            <tr style="background-color: #ff000080">
+              <td rowspan="2">Crvena</td>
+              <td>Viša</td>
+              <td id="visa-crvena">0</td>
+              <td>28.8407</td>
+              <td id="visa-crvena-cena">0</td>
+            </tr>
+            <tr style="background-color: #ff000080">
+              <td>Niža</td>
+              <td id="niza-crvena">0</td>
+              <td>7.2102</td>
+              <td id="niza-crvena-cena">0</td>
+            </tr>
+          </table>
+        </div>
+        <h3 id="zaduzenje-struja">Zaduženje:</h3>
+        <h3 id="osnovica-akciza">Osnovica za obračun akcize (7,5%):</h3>
+        <h3 id="akciza">Iznos akcize:</h3>
+        <h3 id="osnovica-pdv">Osnovica za PDV (20%):</h3>
+        <h3 id="pdv">Iznos PDV-a:</h3>
+        <h3>Taksa za javni medijski servis: 350 din.</h3>
+      </div>
+    </div>
+
+    <script>
+      const visaPrethodno = window.localStorage.getItem("visaPrethodno");
+      const nizaPrethodno = window.localStorage.getItem("nizaPrethodno");
+      if (visaPrethodno) {
+        document.getElementById("visa-prethodno").value = visaPrethodno;
+      }
+      if (nizaPrethodno) {
+        document.getElementById("niza-prethodno").value = nizaPrethodno;
+      }
+
+      function izracunaj(visaP, visaT, nizaP, nizaT) {
+        let visa = visaT - visaP;
+        let niza = nizaT - nizaP;
+        let ukupno = visa + niza;
+        document.getElementById("ukupno").innerHTML =
+          "Ukupno potrošeno: " + ukupno + " kWh";
+        document.getElementById("visa").innerHTML =
+          "Viša tarifa: " + visa + " kWh";
+        document.getElementById("niza").innerHTML =
+          "Niža tarifa: " + niza + " kWh";
+
+        let procenat = parseFloat((visa / ukupno).toFixed(4));
+        let visaZelena = Math.ceil(350 * procenat);
+        let nizaZelena = 350 - visaZelena;
+        let visaPlava = Math.ceil(850 * procenat);
+        let nizaPlava = 850 - visaPlava;
+        let visaCrvena = visa - visaZelena - visaPlava;
+        let nizaCrvena = niza - nizaZelena - nizaPlava;
+        visaZelena = visaZelena > 0 ? visaZelena : 0;
+        nizaZelena = nizaZelena > 0 ? nizaZelena : 0;
+        visaPlava = visaPlava > 0 ? visaPlava : 0;
+        nizaPlava = nizaPlava > 0 ? nizaPlava : 0;
+        visaCrvena = visaCrvena > 0 ? visaCrvena : 0;
+        nizaCrvena = nizaCrvena > 0 ? nizaCrvena : 0;
+
+        document.getElementById("visa-zelena").innerHTML = visaZelena;
+        document.getElementById("visa-plava").innerHTML = visaPlava;
+        document.getElementById("visa-crvena").innerHTML = visaCrvena;
+        document.getElementById("niza-zelena").innerHTML = nizaZelena;
+        document.getElementById("niza-plava").innerHTML = nizaPlava;
+        document.getElementById("niza-crvena").innerHTML = nizaCrvena;
+
+        document.getElementById("visa-zelena-cena").innerHTML = (
+          visaZelena * 9.6136
+        ).toFixed(2);
+        document.getElementById("visa-plava-cena").innerHTML = (
+          visaPlava * 14.4203
+        ).toFixed(2);
+        document.getElementById("visa-crvena-cena").innerHTML = (
+          visaCrvena * 28.8407
+        ).toFixed(2);
+        document.getElementById("niza-zelena-cena").innerHTML = (
+          nizaZelena * 2.4034
+        ).toFixed(2);
+        document.getElementById("niza-plava-cena").innerHTML = (
+          nizaPlava * 3.6051
+        ).toFixed(2);
+        document.getElementById("niza-crvena-cena").innerHTML = (
+          nizaCrvena * 7.2102
+        ).toFixed(2);
+
+        document.getElementById("zaduzenje-struja").innerHTML =
+          "Zaduženje: " +
+          (
+            visaZelena * 9.6136 +
+            nizaZelena * 2.4034 +
+            visaPlava * 14.4203 +
+            nizaPlava * 3.6051 +
+            visaCrvena * 28.8407 +
+            nizaCrvena * 7.2102
+          ).toFixed(2) +
+          " din.";
+
+        let osnovicaZaAkcizu =
+          visaZelena * 9.6136 +
+          nizaZelena * 2.4034 +
+          visaPlava * 14.4203 +
+          nizaPlava * 3.6051 +
+          visaCrvena * 28.8407 +
+          nizaCrvena * 7.2102 +
+          ukupno * 0.801 +
+          ukupno * 0.015;
+        document.getElementById("osnovica-akciza").innerHTML =
+          "Osnovica za obračun akcize (7,5%): " +
+          osnovicaZaAkcizu.toFixed(2) +
+          " din.";
+        document.getElementById("akciza").innerHTML =
+          "Iznos akcize: " + (osnovicaZaAkcizu * 0.075).toFixed(2) + " din.";
+
+        let osnovicaZaPDV = osnovicaZaAkcizu + osnovicaZaAkcizu * 0.075;
+        document.getElementById("osnovica-pdv").innerHTML =
+          "Osnovica za PDV (20%): " + osnovicaZaPDV.toFixed(2) + " din.";
+        document.getElementById("pdv").innerHTML =
+          "Iznos PDV-a: " + (osnovicaZaPDV * 0.2).toFixed(2) + " din.";
+
+        let zaduzenje = osnovicaZaPDV + osnovicaZaPDV * 0.2;
+
+        let racun = parseFloat((zaduzenje + 350).toFixed(2));
+        document.getElementById("racun").innerHTML =
+          "Račun: " + racun + " din.";
+      }
+
+      document.getElementById("submit-btn").addEventListener("click", (e) => {
+        e.target.disabled = true;
+        let visaPret = parseInt(
+          document.getElementById("visa-prethodno").value,
+        );
+        let visaTren = parseInt(document.getElementById("visa-trenutno").value);
+        let nizaPret = parseInt(
+          document.getElementById("niza-prethodno").value,
+        );
+        let nizaTren = parseInt(document.getElementById("niza-trenutno").value);
+        if (
+          Number.isNaN(visaPret) ||
+          Number.isNaN(visaTren) ||
+          Number.isNaN(nizaPret) ||
+          Number.isNaN(nizaTren)
+        ) {
+          e.target.disabled = false;
+          return;
+        }
+        window.localStorage.setItem("visaPrethodno", visaTren);
+        window.localStorage.setItem("nizaPrethodno", nizaTren);
+        izracunaj(visaPret, visaTren, nizaPret, nizaTren);
+        e.target.disabled = false;
+      });
+    </script>
+  </body>
+</html>
